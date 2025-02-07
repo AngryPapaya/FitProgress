@@ -15,6 +15,8 @@ struct FitProgressApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                // No fuerces un esquema de color específico
+                //.preferredColorScheme(.light)
         }
     }
 }
