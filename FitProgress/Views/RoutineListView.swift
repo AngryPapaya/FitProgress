@@ -104,11 +104,14 @@ struct RoutineListView: View {
     }
 
     private func addRoutine() {
+        guard !newRoutineName.trimmingCharacters(in: .whitespaces).isEmpty else {
+            print("Error: El nombre de la rutina no puede estar vacío")
+            return
+        }
         let newRoutine = Routine(context: viewContext)
         newRoutine.id = UUID()
         newRoutine.name = newRoutineName
         newRoutine.date = newRoutineDate
-
         do {
             try viewContext.save()
             newRoutineName = ""
@@ -117,6 +120,7 @@ struct RoutineListView: View {
             print("Error al guardar la nueva rutina: \(error)")
         }
     }
+
 
     private func deleteRoutine(_ routine: Routine) {
         if let exercises = routine.exercises as? Set<Exercise> {

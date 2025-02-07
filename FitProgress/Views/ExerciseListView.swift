@@ -14,6 +14,8 @@ struct ExerciseListView: View {
     @FetchRequest var exercises: FetchedResults<Exercise>
     @State private var exerciseToEdit: Exercise?
     @State private var newExerciseName: String = ""
+    @State private var newWeight: String = ""
+    @State private var newRepetitions: String = ""
     @State private var showAddExerciseSheet = false
 
     init(routine: Routine) {
@@ -40,6 +42,8 @@ struct ExerciseListView: View {
                     Button("Editar") {
                         exerciseToEdit = exercise
                         newExerciseName = exercise.name ?? ""
+                        newWeight = String(exercise.weight)
+                        newRepetitions = String(exercise.repetitions)
                     }
                     .tint(.blue)
                 }
@@ -59,7 +63,13 @@ struct ExerciseListView: View {
             get: { exerciseToEdit != nil },
             set: { if !$0 { exerciseToEdit = nil } }
         )) {
-            TextField("Nombre del Ejercicio", text: $newExerciseName)
+            VStack {
+                TextField("Nombre del Ejercicio", text: $newExerciseName)
+                TextField("Peso (kg)", text: $newWeight)
+                    .keyboardType(.decimalPad)
+                TextField("Repeticiones", text: $newRepetitions)
+                    .keyboardType(.numberPad)
+            }
             Button("Guardar") {
                 saveExerciseEdit()
             }
@@ -73,8 +83,11 @@ struct ExerciseListView: View {
     }
 
     private func saveExerciseEdit() {
-        exerciseToEdit?.name = newExerciseName
+        guard let exerciseToEdit = exerciseToEdit else { return }
+        exerciseToEdit.name = newExerciseName
+        exerciseToEdit.weight = Double(newWeight) ?? exerciseToEdit.weight
+        exerciseToEdit.repetitions = Int16(newRepetitions) ?? exerciseToEdit.repetitions
         try? viewContext.save()
-        exerciseToEdit = nil
+        self.exerciseToEdit = nil
     }
 }
