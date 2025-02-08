@@ -11,41 +11,28 @@ import CoreData
 struct ExerciseListView: View {
     let routine: Routine
     @Environment(\.managedObjectContext) private var viewContext
-    @FetchRequest var exercises: FetchedResults<Exercise>
+    @FetchRequest private var exercises: FetchedResults<Exercise>
     @State private var exerciseToEdit: Exercise?
-    @State private var newExerciseName: String = ""
-    @State private var newWeight: String = ""
-    @State private var newRepetitions: String = ""
     @State private var showAddExerciseSheet = false
 
     init(routine: Routine) {
         self.routine = routine
-        _exercises = FetchRequest(
-            entity: Exercise.entity(),
-            sortDescriptors: [NSSortDescriptor(keyPath: \Exercise.date, ascending: true)],
-            predicate: NSPredicate(format: "routine == %@", routine)
-        )
+        self._exercises = FetchRequest(fetchRequest: ExerciseListView.fetchExercises(for: routine))
+    }
+
+    // MARK: - FetchRequest Helper
+    private static func fetchExercises(for routine: Routine) -> NSFetchRequest<Exercise> {
+        let request: NSFetchRequest<Exercise> = Exercise.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Exercise.date, ascending: true)]
+        request.predicate = NSPredicate(format: "routine == %@", routine)
+        return request
     }
 
     var body: some View {
         List {
             ForEach(exercises, id: \.id) { exercise in
                 NavigationLink(destination: ProgressView(exerciseName: exercise.name ?? "")) {
-                    VStack(alignment: .leading) {
-                        Text(exercise.name ?? "Ejercicio sin nombre")
-                            .font(.headline)
-                        Text("Peso: \(exercise.weight, specifier: "%.1f") kg - Reps: \(exercise.repetitions)")
-                            .font(.subheadline)
-                    }
-                }
-                .swipeActions(edge: .leading) {
-                    Button("Editar") {
-                        exerciseToEdit = exercise
-                        newExerciseName = exercise.name ?? ""
-                        newWeight = String(exercise.weight)
-                        newRepetitions = String(exercise.repetitions)
-                    }
-                    .tint(.blue)
+                    ExerciseRow(exercise: exercise, onEdit: { exerciseToEdit = $0 })
                 }
             }
             .onDelete(perform: deleteExercise)
@@ -59,35 +46,52 @@ struct ExerciseListView: View {
         .sheet(isPresented: $showAddExerciseSheet) {
             AddExerciseView(routine: routine, routineDate: routine.date ?? Date())
         }
-        .alert("Editar Ejercicio", isPresented: Binding<Bool>(
-            get: { exerciseToEdit != nil },
-            set: { if !$0 { exerciseToEdit = nil } }
-        )) {
-            VStack {
-                TextField("Nombre del Ejercicio", text: $newExerciseName)
-                TextField("Peso (kg)", text: $newWeight)
-                    .keyboardType(.decimalPad)
-                TextField("Repeticiones", text: $newRepetitions)
-                    .keyboardType(.numberPad)
-            }
-            Button("Guardar") {
-                saveExerciseEdit()
-            }
-            Button("Cancelar", role: .cancel) { }
+        .sheet(item: $exerciseToEdit) { exercise in
+            EditExerciseView(exercise: exercise)
         }
     }
 
+    // MARK: - Acciones
+
     private func deleteExercise(offsets: IndexSet) {
-        offsets.map { exercises[$0] }.forEach(viewContext.delete)
-        try? viewContext.save()
+        offsets.forEach { viewContext.delete(exercises[$0]) }
+        saveContext()
     }
 
-    private func saveExerciseEdit() {
-        guard let exerciseToEdit = exerciseToEdit else { return }
-        exerciseToEdit.name = newExerciseName
-        exerciseToEdit.weight = Double(newWeight) ?? exerciseToEdit.weight
-        exerciseToEdit.repetitions = Int16(newRepetitions) ?? exerciseToEdit.repetitions
-        try? viewContext.save()
-        self.exerciseToEdit = nil
+    private func saveContext() {
+        do {
+            try viewContext.save()
+        } catch {
+            print("Error al guardar cambios: \(error.localizedDescription)")
+        }
+    }
+}
+
+// MARK: - Subvistas
+
+struct ExerciseRow: View {
+    let exercise: Exercise
+    let onEdit: (Exercise) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(exercise.name ?? "Ejercicio sin nombre")
+                .font(.headline)
+
+            if let sets = exercise.sets?.allObjects as? [WorkoutSet], !sets.isEmpty {
+                ForEach(Array(sets.enumerated()), id: \.element.id) { index, set in
+                    Text("Set \(index + 1): Peso \(set.weight, specifier: "%.1f") kg - Reps: \(set.repetitions)")
+                        .font(.subheadline)
+                }
+            } else {
+                Text("No hay sets registrados")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+        }
+        .swipeActions(edge: .leading) {
+            Button("Editar") { onEdit(exercise) }
+                .tint(.blue)
+        }
     }
 }

@@ -13,6 +13,6 @@ import CoreData
 public class Routine: NSManagedObject {
     override public func awakeFromInsert() {
         super.awakeFromInsert()
-        self.id = UUID() // 🔥 Asegura que siempre tenga un UUID
+        self.id = UUID() // Ensure unique ID is always set
     }
 }

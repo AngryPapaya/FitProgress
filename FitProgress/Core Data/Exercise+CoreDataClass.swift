@@ -13,6 +13,6 @@ import CoreData
 public class Exercise: NSManagedObject {
     override public func awakeFromInsert() {
         super.awakeFromInsert()
-        self.id = UUID() // Generar ID único automáticamente
+        self.id = UUID() // Automatically generate unique ID
     }
 }

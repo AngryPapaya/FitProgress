@@ -16,8 +16,8 @@ extension Routine: Identifiable {
 
     @NSManaged public var id: UUID?
     @NSManaged public var name: String?
-    @NSManaged public var date: Date? // Asegúrate de que esta línea esté presente
-    @NSManaged public var exercises: NSSet?
+    @NSManaged public var date: Date? // Ensure this line is present
+    @NSManaged public var exercises: NSSet? // Relationship with Exercise
 }
 
 // MARK: - Generated accessors for exercises

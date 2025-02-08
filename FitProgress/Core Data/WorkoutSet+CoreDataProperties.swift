@@ -8,12 +8,13 @@
 import Foundation
 import CoreData
 
-extension ExerciseSet: Identifiable {
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<ExerciseSet> {
-        return NSFetchRequest<ExerciseSet>(entityName: "ExerciseSet")
+extension WorkoutSet: Identifiable {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<WorkoutSet> {
+        return NSFetchRequest<WorkoutSet>(entityName: "WorkoutSet")
     }
 
     @NSManaged public var id: UUID?
+    @NSManaged public var weight: Double
     @NSManaged public var repetitions: Int16
-    @NSManaged public var exercise: Exercise?
+    @NSManaged public var exercise: Exercise? // Relación inversa con Exercise
 }

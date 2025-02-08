@@ -15,7 +15,7 @@ extension UIView {
         setContentCompressionResistancePriority(.required, for: .vertical)
         setContentCompressionResistancePriority(.required, for: .horizontal)
     }
-
+    
     static func setShouldTranslateAutoresizingMaskIntoConstraints(_ flag: Bool) {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
         let windows = windowScene.windows

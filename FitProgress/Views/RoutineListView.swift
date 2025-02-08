@@ -37,8 +37,7 @@ struct RoutineListView: View {
                                     newRoutineName = routine.name ?? ""
                                     newRoutineDate = routine.date ?? Date()
                                     showEditRoutineSheet = true
-                                }
-                                .tint(.blue)
+                                }.tint(.blue)
                             }
                         }
                     }
@@ -46,7 +45,9 @@ struct RoutineListView: View {
             }
             .navigationTitle("Rutinas")
             .toolbar {
-                Button(action: { showAddRoutineSheet = true }) {
+                Button(action: {
+                    showAddRoutineSheet = true
+                }) {
                     Image(systemName: "plus").foregroundColor(.primary)
                 }
             }
@@ -63,17 +64,14 @@ struct RoutineListView: View {
                     HStack {
                         Button("Cancelar") {
                             showAddRoutineSheet = false
-                        }
-                        .padding()
+                        }.padding()
                         Spacer()
                         Button("Añadir") {
                             addRoutine()
                             showAddRoutineSheet = false
-                        }
-                        .padding()
+                        }.padding()
                     }
-                }
-                .padding()
+                }.padding()
             }
             .sheet(isPresented: $showEditRoutineSheet) {
                 VStack {
@@ -88,17 +86,14 @@ struct RoutineListView: View {
                     HStack {
                         Button("Cancelar") {
                             showEditRoutineSheet = false
-                        }
-                        .padding()
+                        }.padding()
                         Spacer()
                         Button("Guardar") {
                             saveRoutineEdit()
                             showEditRoutineSheet = false
-                        }
-                        .padding()
+                        }.padding()
                     }
-                }
-                .padding()
+                }.padding()
             }
         }
     }
@@ -112,6 +107,7 @@ struct RoutineListView: View {
         newRoutine.id = UUID()
         newRoutine.name = newRoutineName
         newRoutine.date = newRoutineDate
+
         do {
             try viewContext.save()
             newRoutineName = ""
@@ -121,16 +117,14 @@ struct RoutineListView: View {
         }
     }
 
-
     private func deleteRoutine(_ routine: Routine) {
         if let exercises = routine.exercises as? Set<Exercise> {
             for exercise in exercises {
                 viewContext.delete(exercise)
             }
         }
-
         viewContext.delete(routine)
-        
+
         do {
             try viewContext.save()
         } catch {
@@ -141,6 +135,7 @@ struct RoutineListView: View {
     private func saveRoutineEdit() {
         routineToEdit?.name = newRoutineName
         routineToEdit?.date = newRoutineDate
+
         do {
             try viewContext.save()
             routineToEdit = nil
